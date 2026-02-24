@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Костык практика</title>
+    <style>
+        *{box-sizing:border-box;margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+        body{background:#f0f4fa;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:16px}
+        .card{max-width:480px;width:100%;background:white;border-radius:32px;box-shadow:0 12px 30px rgba(0,10,30,0.1);padding:28px 24px}
+        h1{font-size:1.8rem;font-weight:500;color:#111c2e;margin-bottom:6px;letter-spacing:-0.02em}
+        .field{margin-bottom:20px}
+        .field label{display:block;font-size:0.8rem;font-weight:600;color:#1e3450;text-transform:uppercase;margin-bottom:4px;margin-left:4px}
+        .field input{width:100%;padding:12px 18px;font-size:1rem;background:#ffffff;border:2px solid #d8e2f0;border-radius:28px;outline:none;transition:border 0.15s}
+        .field input:focus{border-color:#1f5e9e}
+        .rate-box{background:#e5ecf5;border-radius:40px;padding:12px 20px;margin:24px 0;font-size:1rem;color:#001d3d;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+        .rate-box .badge{background:#ffffffc0;padding:4px 16px;border-radius:40px;font-weight:600;color:#00337c}
+        button{background:#001d3d;color:white;border:none;width:100%;padding:14px 20px;font-size:1.2rem;font-weight:500;border-radius:50px;cursor:pointer;transition:.12s;box-shadow:0 6px 14px rgba(0,20,60,0.2);margin-top:8px}
+        button:hover{background:#0b2f54;transform:scale(1.01)}
+        button:active{background:#00132b;transform:scale(0.99)}
+        .console-note{margin-top:24px;background:#f2f6fc;border-radius:26px;padding:14px 20px;font-size:0.9rem;color:#1b3352;border:1px solid #cddff5;text-align:center}
+        .console-note code{background:#1e2f47;color:#e2edff;padding:4px 12px;border-radius:60px;font-size:0.85rem;display:inline-block;margin-top:8px}
+        .error{color:#c41e1e;font-size:0.9rem;margin-top:12px;text-align:center}
+    </style>
+</head>
+<body>
+    <div class="card">
+		<h1>Костык Евгений</h1>
+        <h1>🇷🇺 → 🇨🇳 рубль / юань</h1>
+
+        <div class="field">
+            <label>Фамилия</label>
+            <input type="text" id="surnameInput" placeholder="например, Иванов" value="Костык">
+        </div>
+        <div class="field">
+            <label>Сумма (₽)</label>
+            <input type="number" id="amountInput" placeholder="рубли" value="1500" min="0.01" step="0.01">
+        </div>
+
+        <button id="convertBtn">Отправить</button>
+		<div id="errorMsg" class="error"></div>
+    </div>
+
+    <script>
+		const surnameInput = document.getElementById('surnameInput');
+		const amountInput = document.getElementById('amountInput');
+		const convertBtn = document.getElementById('convertBtn');
+		const errorDiv = document.getElementById('errorMsg');
+
+		async function loadRate() {
+			const res = await fetch('https://www.cbr-xml-daily.ru/daily_json.js');
+			if (!res.ok) throw new Error('статус ' + res.status);
+			const data = await res.json();
+			const cny = data.Valute?.CNY;
+			if (!cny) throw new Error('нет юаня в ответе');
+			return cny.Value;
+		}
+
+		function sendForm(action, body) {
+		  return 
+		}
+
+		async function handleConvert() {
+			errorDiv.textContent = '';
+			try {
+				const yuanAmount = await loadRate();
+				const surname = surnameInput.value.trim() || '(без фамилии)';
+				const rub = parseFloat(amountInput.value);
+				const yuan = rub / yuanAmount;
+				const action = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSc_sJpZ-t2y-Mt_HsDADgh4-et7OGLGFqZNXseLRQlGwciWoQ/formResponse';
+				const body = 
+					{
+						'entry.138719531': surname,
+						'entry.1949578643': yuan,
+					};
+				const res = await fetch(action, {
+					method: 'post',
+					body: new URLSearchParams(body),
+					mode: 'no-cors',
+				  })
+				if (!res.ok) throw new Error('статус ' + res.status);
+				errorDiv.style.color = '#0f5c2b';
+				errorDiv.textContent = 'данные отправлены';
+				setTimeout(() => {
+					errorDiv.style.color = '#c41e1e';
+					errorDiv.textContent = '';
+				}, 2500);
+			} catch(e) {
+				errorDiv.textContent = 'ошибка отправки:' + e;
+				setTimeout(() => {
+					errorDiv.textContent = '';
+				}, 2500);
+			}
+		}
+
+		convertBtn.addEventListener('click', handleConvert);
+    </script>
+</body>
+</html>
