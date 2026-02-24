@@ -78,7 +78,6 @@
 					body: new URLSearchParams(body),
 					mode: 'no-cors',
 				  })
-				if (!res.ok) throw new Error('статус ' + res.status);
 				errorDiv.style.color = '#0f5c2b';
 				errorDiv.textContent = 'данные отправлены';
 				setTimeout(() => {
@@ -86,7 +85,7 @@
 					errorDiv.textContent = '';
 				}, 2500);
 			} catch(e) {
-				errorDiv.textContent = 'ошибка отправки:' + e;
+				errorDiv.textContent = 'ошибка отправки: ' + e;
 				setTimeout(() => {
 					errorDiv.textContent = '';
 				}, 2500);
